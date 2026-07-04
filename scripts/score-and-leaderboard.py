@@ -74,13 +74,16 @@ def push_to_leaderboard(event, repo_name, alias, timestamp, leaderboard_repo, gi
     file_path = f"events/{repo_name}/{filename}"
 
     with tempfile.TemporaryDirectory() as tmpdir:
-        # Configure git
-        subprocess.run(['git', 'config', '--global', 'user.name', 'wad-scorer'], check=True)
-        subprocess.run(['git', 'config', '--global', 'user.email', 'wad@veracode.com'], check=True)
-
-        # Clone with auth using GitHub CLI
+        # Set up environment with token
         env = os.environ.copy()
         env['GH_TOKEN'] = github_token
+
+        # Configure git with token for all operations
+        subprocess.run(['git', 'config', '--global', 'user.name', 'wad-scorer'], check=True)
+        subprocess.run(['git', 'config', '--global', 'user.email', 'wad@veracode.com'], check=True)
+        subprocess.run(['git', 'config', '--global', 'credential.helper', 'gh'], env=env, check=True)
+
+        # Clone with auth using GitHub CLI
         subprocess.run(['gh', 'repo', 'clone', leaderboard_repo, tmpdir], env=env, check=True)
 
         # Create directory if needed
@@ -99,7 +102,7 @@ def push_to_leaderboard(event, repo_name, alias, timestamp, leaderboard_repo, gi
             ['git', 'commit', '-m', f"Score: {alias} - {event['score']} vulns fixed"],
             check=True
         )
-        subprocess.run(['git', 'push'], check=True)
+        subprocess.run(['git', 'push'], env=env, check=True)
 
 
 if __name__ == '__main__':
