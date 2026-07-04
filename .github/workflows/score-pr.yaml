@@ -83,18 +83,18 @@ jobs:
           echo "ts=$ts" >> $GITHUB_OUTPUT
 
       - name: Push to leaderboard
+        env:
+          LEADERBOARD_TOKEN: ${{ secrets.LEADERBOARD_TOKEN }}
         run: |
           cd original
           python3 scripts/score-and-leaderboard.py \
             --repo-name verademo-javascript-api \
-            --username ${{ github.event.pull_request.user.login }} \
+            --username "${{ github.event.pull_request.user.login }}" \
             --baseline-count ${{ steps.baseline.outputs.count }} \
             --current-count ${{ steps.current.outputs.count }} \
             --timestamp "${{ steps.timestamp.outputs.ts }}" \
             --leaderboard-repo veracode-wad26/leaderboard \
-            --github-token ${{ secrets.LEADERBOARD_TOKEN }}
-        env:
-          LEADERBOARD_TOKEN: ${{ secrets.LEADERBOARD_TOKEN }}
+            --github-token "$LEADERBOARD_TOKEN"
 
       - name: Comment on PR
         uses: actions/github-script@v7
@@ -109,16 +109,14 @@ jobs:
             if (current === 0) status = '✅';
             else if (score > 0) status = '🟡';
 
-            const body = `${status} **Scoring Update**
-
-| Metric | Value |
-|--------|-------|
-| Baseline | ${baseline} vulnerabilities |
-| Current | ${current} vulnerabilities |
-| Fixed | ${score} vulnerabilities |
-| Timestamp | ${timestamp} |
-
-Run \`npm audit --audit-level=high\` locally to see details.`;
+            let body = status + ' **Scoring Update**\n\n';
+            body += '| Metric | Value |\n';
+            body += '|--------|-------|\n';
+            body += '| Baseline | ' + baseline + ' vulnerabilities |\n';
+            body += '| Current | ' + current + ' vulnerabilities |\n';
+            body += '| Fixed | ' + score + ' vulnerabilities |\n';
+            body += '| Timestamp | ' + timestamp + ' |\n\n';
+            body += 'Run `npm audit --audit-level=high` locally to see details.';
 
             github.rest.issues.createComment({
               issue_number: context.issue.number,
