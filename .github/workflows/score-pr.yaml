@@ -14,6 +14,11 @@ name: Score PR - JavaScript
 # - Run arbitrary commands with fork inputs
 # This would allow malicious PRs to steal LEADERBOARD_TOKEN.
 
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
 on:
   pull_request_target:
     types: [opened, synchronize]
