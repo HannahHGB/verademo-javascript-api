@@ -1,7 +1,21 @@
 name: Score PR - JavaScript
 
+# ⚠️  SECURITY WARNING: This workflow uses pull_request_target
+# This runs with access to LEADERBOARD_TOKEN secret in the original repo's context.
+# This is safe ONLY because:
+# 1. We do NOT install fork dependencies (npm install, pip install, etc.)
+# 2. We do NOT execute fork code (scripts, setup.py, build files)
+# 3. We only run static analysis tools on manifests (npm audit, pip-audit, dependency-check)
+# 4. We only read fork files, never execute them
+#
+# DO NOT change this workflow to:
+# - Run npm install / pip install / mvn build from the fork
+# - Execute scripts from the fork
+# - Run arbitrary commands with fork inputs
+# This would allow malicious PRs to steal LEADERBOARD_TOKEN.
+
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, synchronize]
     branches:
       - main
@@ -39,7 +53,6 @@ jobs:
       - name: Run npm audit on fork
         run: |
           cd fork
-          npm install > /dev/null 2>&1 || true
           npm audit --audit-level=high --json > audit-report.json 2>&1 || true
 
       - name: Parse current vulnerabilities
