@@ -62,9 +62,10 @@ jobs:
           high = vulns.get('high', 0)
           current_count = critical + high
 
-          print(f"count={current_count}")
-          with open('$GITHUB_OUTPUT', 'a') as f:
+          import os
+          with open(os.environ['GITHUB_OUTPUT'], 'a') as f:
               f.write(f"count={current_count}\n")
+          print(f"Current: {current_count} vulnerabilities")
           EOF
 
       - name: Calculate score
