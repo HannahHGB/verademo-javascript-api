@@ -78,9 +78,10 @@ def push_to_leaderboard(event, repo_name, alias, timestamp, leaderboard_repo, gi
         subprocess.run(['git', 'config', '--global', 'user.name', 'wad-scorer'], check=True)
         subprocess.run(['git', 'config', '--global', 'user.email', 'wad@veracode.com'], check=True)
 
-        # Clone with auth
-        clone_url = f"https://x-access-token:{github_token}@github.com/{leaderboard_repo}.git"
-        subprocess.run(['git', 'clone', clone_url, tmpdir], check=True)
+        # Clone with auth using GitHub CLI
+        env = os.environ.copy()
+        env['GH_TOKEN'] = github_token
+        subprocess.run(['gh', 'repo', 'clone', leaderboard_repo, tmpdir], env=env, check=True)
 
         # Create directory if needed
         event_dir = os.path.join(tmpdir, 'events', repo_name)

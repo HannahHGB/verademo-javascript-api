@@ -29,9 +29,10 @@ def parse_npm_baseline(file_path):
     # Count "Severity: critical" and "Severity: high" lines
     lines = content.split('\n')
     for line in lines:
-        if 'Severity: critical' in line.lower():
+        line_lower = line.lower()
+        if 'severity: critical' in line_lower:
             critical_count += 1
-        elif 'Severity: high' in line.lower():
+        elif 'severity: high' in line_lower:
             high_count += 1
 
     total = critical_count + high_count

@@ -83,6 +83,19 @@ jobs:
           ts=$(date -u +'%Y-%m-%dT%H:%M:%S.%N' | sed 's/[0-9]\{6\}Z$/Z/')Z
           echo "ts=$ts" >> $GITHUB_OUTPUT
 
+      - name: Debug - Check token availability
+        env:
+          LEADERBOARD_TOKEN: ${{ secrets.LEADERBOARD_TOKEN }}
+        run: |
+          if [ -z "$LEADERBOARD_TOKEN" ]; then
+            echo "❌ LEADERBOARD_TOKEN is empty or not set"
+            exit 1
+          else
+            TOKEN_LENGTH=${#LEADERBOARD_TOKEN}
+            echo "✅ LEADERBOARD_TOKEN is available (length: $TOKEN_LENGTH chars)"
+            echo "First 10 chars: ${LEADERBOARD_TOKEN:0:10}..."
+          fi
+
       - name: Push to leaderboard
         env:
           LEADERBOARD_TOKEN: ${{ secrets.LEADERBOARD_TOKEN }}
