@@ -66,18 +66,25 @@ jobs:
       - name: Install osv-scanner
         run: |
           LATEST=$(curl -s https://api.github.com/repos/google/osv-scanner/releases/latest | jq -r '.tag_name' | sed 's/^v//')
+          echo "Downloading osv-scanner ${LATEST}..."
           curl -sL https://github.com/google/osv-scanner/releases/download/v${LATEST}/osv-scanner_${LATEST}_linux_amd64 -o /tmp/osv-scanner
           chmod +x /tmp/osv-scanner
+          /tmp/osv-scanner --version
 
       - name: Run osv-scanner on fork
         run: |
           cd fork
-          /tmp/osv-scanner --lockfile=package-lock.json --json > audit-report.json 2>&1 || true
+          if [ ! -f package-lock.json ]; then
+            echo "❌ package-lock.json not found"
+            exit 1
+          fi
+          echo "📦 Scanning fork..."
+          /tmp/osv-scanner -r -f json . > audit-report.json 2>&1 || true
 
       - name: Parse current vulnerabilities
         id: current
         run: |
-          count=$(cd original && python3 scripts/parse-current.py ../fork/audit-report.json)
+          count=$(cd original && python3 scripts/parse-current.py ../fork/audit-report.json) || count=0
           echo "count=$count" >> $GITHUB_OUTPUT
           echo "Current: $count vulnerabilities (CRITICAL + HIGH)"
 
