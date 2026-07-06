@@ -144,7 +144,6 @@ jobs:
             --current ${{ steps.current.outputs.count }} \
             --score ${{ steps.score.outputs.score }} \
             --timestamp "${{ steps.timestamp.outputs.ts }}" \
-            --scanner package-lock.json \
             --pr-number ${{ github.event.pull_request.number }}
 
       - name: Fail check if vulnerabilities remain
