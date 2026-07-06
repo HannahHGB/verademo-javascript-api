@@ -54,12 +54,18 @@ jobs:
       - name: Setup Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.24'
+          go-version: '1.26'
 
       - name: Install osv-scanner
         run: |
           go install github.com/google/osv-scanner/v2/cmd/osv-scanner@latest
           echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
+
+      - name: Verify osv-scanner installation
+        run: |
+          osv-scanner --version
+          which osv-scanner
+          echo "✅ osv-scanner is available in PATH"
 
       - name: Validate package.json exists
         run: |
@@ -72,7 +78,7 @@ jobs:
         run: |
           cd fork
           echo "📦 Scanning fork..."
-          osv-scanner scan -r -o json . > audit-report.json 2>&1 || true
+          osv-scanner scan -r -f json --output-file audit-report.json . 2>&1
 
       - name: Parse current vulnerabilities
         id: current
