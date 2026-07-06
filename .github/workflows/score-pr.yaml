@@ -58,6 +58,10 @@ jobs:
       - name: Run npm audit on fork
         run: |
           cd fork
+          if [ ! -f package.json ]; then
+            echo "❌ package.json not found in fork"
+            exit 1
+          fi
           npm audit --audit-level=high --json > audit-report.json 2>&1 || true
 
       - name: Parse current vulnerabilities
