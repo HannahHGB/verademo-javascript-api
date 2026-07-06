@@ -25,7 +25,10 @@ def parse_osv_baseline(file_path):
         sys.exit(1)
 
     count = 0
-    packages = data.get('results', [{}])[0].get('packages', [])
+    results = data.get('results', [])
+    if not results:
+        return count
+    packages = results[0].get('packages', [])
 
     for package in packages:
         vulns = package.get('vulnerabilities', [])
