@@ -63,11 +63,16 @@ jobs:
             exit 1
           fi
 
+      - name: Install osv-scanner
+        run: |
+          LATEST=$(curl -s https://api.github.com/repos/google/osv-scanner/releases/latest | jq -r '.tag_name' | sed 's/^v//')
+          curl -sL https://github.com/google/osv-scanner/releases/download/v${LATEST}/osv-scanner_${LATEST}_linux_amd64 -o /tmp/osv-scanner
+          chmod +x /tmp/osv-scanner
+
       - name: Run osv-scanner on fork
         run: |
-          npm install -g @google/osv-scanner
           cd fork
-          osv-scanner --lockfile=package-lock.json --json > audit-report.json 2>&1 || true
+          /tmp/osv-scanner --lockfile=package-lock.json --json > audit-report.json 2>&1 || true
 
       - name: Parse current vulnerabilities
         id: current
