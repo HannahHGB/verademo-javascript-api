@@ -51,10 +51,15 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
           path: fork
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup Go
+        uses: actions/setup-go@v5
         with:
-          node-version: '20.14.0'
+          go-version: '1.24'
+
+      - name: Install osv-scanner
+        run: |
+          go install github.com/google/osv-scanner/v2/cmd/osv-scanner@latest
+          echo "$(go env GOPATH)/bin" >> $GITHUB_PATH
 
       - name: Validate package.json exists
         run: |
@@ -63,23 +68,11 @@ jobs:
             exit 1
           fi
 
-      - name: Install osv-scanner
-        run: |
-          LATEST=$(curl -s https://api.github.com/repos/google/osv-scanner/releases/latest | jq -r '.tag_name' | sed 's/^v//')
-          echo "Downloading osv-scanner ${LATEST}..."
-          curl -sL https://github.com/google/osv-scanner/releases/download/v${LATEST}/osv-scanner_${LATEST}_linux_amd64 -o /tmp/osv-scanner
-          chmod +x /tmp/osv-scanner
-          /tmp/osv-scanner --version
-
       - name: Run osv-scanner on fork
         run: |
           cd fork
-          if [ ! -f package-lock.json ]; then
-            echo "❌ package-lock.json not found"
-            exit 1
-          fi
           echo "📦 Scanning fork..."
-          /tmp/osv-scanner -r -f json . > audit-report.json 2>&1 || true
+          osv-scanner scan -r -o json . > audit-report.json 2>&1 || true
 
       - name: Parse current vulnerabilities
         id: current
