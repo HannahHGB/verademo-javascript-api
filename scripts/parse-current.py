@@ -16,7 +16,11 @@ def parse_current(report_path):
     """Parse OSV Scanner JSON and count CRITICAL + HIGH vulnerabilities."""
     try:
         with open(report_path, 'r') as f:
-            data = json.load(f)
+            content = f.read().strip()
+            if not content:
+                print(f"❌ Report file is empty: {report_path}", file=sys.stderr)
+                sys.exit(1)
+            data = json.loads(content)
     except FileNotFoundError:
         print(f"❌ Could not find {report_path}", file=sys.stderr)
         sys.exit(1)
@@ -25,7 +29,10 @@ def parse_current(report_path):
         sys.exit(1)
 
     count = 0
-    packages = data.get('results', [{}])[0].get('packages', [])
+    results = data.get('results', [])
+    if not results:
+        return count
+    packages = results[0].get('packages', [])
 
     for package in packages:
         vulns = package.get('vulnerabilities', [])
